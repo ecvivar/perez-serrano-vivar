@@ -62,7 +62,6 @@ def register():
         username = request.form['username']
         password = request.form['password']
         email = request.form['email']
-        #cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         conn=mysql.connect()
         cursor=conn.cursor()
         cursor.execute('SELECT * FROM usuarios WHERE username = %s', (username, ))
@@ -78,7 +77,6 @@ def register():
         else:
             cursor.execute('INSERT INTO usuarios VALUES (NULL,%s,%s,%s)',(username, password, email, ))
             conn.commit()
-            #mysql.connection.commit()
             msg = 'You have successfully registered!'
             return render_template('login.html', msg=msg) 
     elif request.method == 'POST':
@@ -91,12 +89,9 @@ def add_product_to_cart():
     if 'usuario' not in session:
         msg = 'Debe iniciar sesion para continuar'
         return render_template('login.html', msg=msg)
-        #msg = 'Su producto ha sido a;adido al carrito'
-        #return redirect('/')
     else:
         msg = 'Su producto ha sido a;adido al carrito'
         return redirect('/')
-        #msg = 'Debe iniciar sesion para continuar'
-        #return render_template('login.html', msg=msg)
+        
 if __name__ == '__main__':
     app.run(debug=True)
