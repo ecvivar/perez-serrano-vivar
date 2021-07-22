@@ -1,23 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>eShop</title>
-</head>
-
 <body>
     {% include 'header.html' %}
     <section class="our-publication pt-100 pb-70">
         <div class="container">
             <div class="section-header">
-                <i class="fa fa-book"></i>
                 <h2>Nuestros Productos</h2>
                 <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Autem animi tempora quaerat rem quibusdam! Doloribus sint, placeat corporis officiis eligendi eveniet illum natus tempore, recusandae error nobis possimus eos beatae?</p>
             </div>
@@ -41,11 +26,13 @@
                                 <h4 class="price">$ {{producto[2]}}</h4>
                             </div>
                             <!--Verificamos que el usuario este logueado para agregar productos al carrito sino direccionamos a login-->
+
                             <div class="add-to-cart">
-                                <input type="hidden" name="code" value="{{producto.codigo}}" />
-                                <input type="text" class="product-quantity" name="quantity" value="1" size="2" />
+                                <input type="hidden" name="codigo" value="{{producto[0]}}" />
+                                <input type="text" class="product-quantity" name="cantidad" value="1" size="2" />
                                 <input type="submit" value="Agregar al carrito" class="default-btn" />
                             </div>
+
                         </div>
                     </form>
                 </div>
@@ -54,6 +41,3 @@
         </div>
     </section>
     {% include 'footer.html' %}
-</body>
-
-</html>

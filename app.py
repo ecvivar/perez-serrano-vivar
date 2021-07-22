@@ -43,6 +43,7 @@ def login():
             for row in cursor.fetchall():
                 if password_form == row[0]:
                     session['usuario'] = username_form 
+                    #session['carrito'] = username_form
                     msg ="Se ha identificado correctamente"
                     return redirect('/')
                 else:
@@ -90,8 +91,92 @@ def add_product_to_cart():
         msg = 'Debe iniciar sesion para continuar'
         return render_template('login.html', msg=msg)
     else:
-        msg = 'Su producto ha sido a;adido al carrito'
-        return redirect('/')
-        
+        if request.method == 'POST' and 'codigo' in request.form and 'cantidad' in request.form:
+            codigo_form = request.form['codigo']
+            cantidad_form = request.form['cantidad']
+            conn = mysql.connect()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM productos WHERE codigo=%s",(codigo_form))
+            
+            itemCarrito = cursor.fetchall()
+            for producto in itemCarrito:
+                _codigo = producto[0]
+                _descripcion = producto[1]
+                _precio = producto[2]
+                _foto = producto[4]
+
+            # Deberiamos generar otra db e ir almacenando los productos seleccionados
+            totalAbonar=float(_precio)*float(cantidad_form)
+            usuario=session['usuario']
+
+            # Deberiamo comprobar que el producto se encuentre en el carrito
+            '''
+            Esto no anda
+            if int(codigo_form) == int(_codigo):
+                nueva_cantidad = int(cantidad_form) + 1
+                print(nueva_cantidad)
+                conn = mysql.connect()
+                cursor = conn.cursor()         
+                cursor.execute("UPDATE carrito SET `cantidad`=%s WHERE codigo=%s",(nueva_cantidad,codigo_form))
+                conn.commit()
+            else:
+            '''    
+            conn = mysql.connect()
+            cursor = conn.cursor()
+            sql = "INSERT INTO `carrito`(`id`, `username`, `codigo`, `descripcion`, `precio`, `cantidad`, `foto`, `totalAbonar`) VALUES (NULL, %s, %s, %s, %s, %s, %s, %s)"
+            datos = (usuario, _codigo,_descripcion, _precio, cantidad_form, _foto, totalAbonar)         
+            cursor.execute(sql,datos)
+            conn.commit()
+
+            return redirect('/carrito') 
+
+@app.route('/search', methods=['POST'])
+def search():
+    busqueda = request.form['txtSearch']
+    sql="SELECT * FROM productos where descripcion like %s"
+    conn=mysql.connect() #Hacemos la conexion a mysql
+    cursor=conn.cursor()
+    cursor.execute(sql,(('%' + busqueda + '%'))) #Ejecutamos el string sql junto al comodin
+    rows=cursor.fetchall()
+    conn.commit()
+    return render_template('productos.html',productos=rows)
+
+@app.route('/carrito')
+def carrito():
+    if 'usuario' in session:
+        usuario = session['usuario']
+        print(usuario)
+
+        conn = mysql.connect()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM carrito WHERE username=%s",usuario)
+        itemCarrito = cursor.fetchall()
+        #conn.commit()
+        print(itemCarrito)
+        cursor.execute("SELECT COUNT(*) FROM carrito WHERE username=%s",usuario)
+        registro = cursor.fetchone()
+        mostrarCuantos = registro[0]
+        cantidadProductos = int(mostrarCuantos)
+        print(cantidadProductos)
+        conn.commit()
+
+    return render_template('carrito.html', itemCarrito=itemCarrito) # Renderizo la pagina index.html
+
+@app.route('/borrar/<int:id>')
+def borrar(id):
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM carrito WHERE id=%s",(id))
+    conn.commit()
+    return redirect('/carrito')
+
+@app.route('/vaciar_carrito/<string:username>')
+def vaciar_carrito(username):
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM carrito WHERE username=%s",(username))
+    conn.commit()
+    return redirect('/carrito')
+
 if __name__ == '__main__':
     app.run(debug=True)

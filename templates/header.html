@@ -14,50 +14,56 @@
 
 <body>
 
-
-    <div class="row align-items-center">
+    <div class="d-flex flex-row align-items-center">
         <div class="col-2">
             <a href=" / ">
                 <img id="logo " src="/static/imagenes/logo/logo_design.JPG" width="80%">
             </a>
         </div>
-        <div class="col-4">
-            <input class="form-control form-control-lg" " type="text " name="searchQuery ">
+        <div class="col">
+            <form class="form-inline" method="POST" action="/search">
+                <div class="row">
+                    <div class="col">
+                        <input class="form-control form-control" type="text" name="txtSearch" placeholder="Buscar producto...">
+                    </div>
+                    <div class="col">
+                        <input class="btn text-white bg-dark" type="submit" value="Buscar">
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="col-2 ">
-            <input class="btn text-white bg-dark " " type="submit " value="Search ">
-        </div>
-        {% if not loggedIn %}
+        {% if not session.usuario %}
 
-        <div class="col-1 ">
+        <div class="col-2 ">
             <div id="signInButton ">
-                <a class="link " style="color: black;" href="/login">Sign In</a>
+                <a class="link " style="color: black; " href="/login ">Sign In</a>
             </div>
         </div>
         {% else %}
-        <div class="col-1 ">
-            <div class="dropdown ">
-                <button class="dropbtn ">Hello, <br>{{firstName}}</button>
-                <div class="dropdown-content ">
-                    <a href="/account/orders ">Your orders</a>
-                    <a href="/account/profile ">Your profile</a>
+        <div class="col-2 ">
+            <div class="row align-items-center ">
+                <div class="col ">Bienvenido, <br>{{session.usuario}}
+                </div>
+                <div class="col ">
+                    <a href="/carrito ">Pedidos</a>
+                    <a href="# ">Perfil</a>
                     <hr>
-                    <a href="/logout ">Sign Out</a>
+                    <a href="/logout ">Logout</a>
                 </div>
             </div>
         </div>
         {% endif %}
-        <div class="col-1 ">
-            <img src="/static/imagenes/cart_shop.png " width="60px " id="cartIcon " />
-        </div>
-        <div class="col-1 ">
-            <a class="link" style="color: black;" href="/cart "> CART {{noOfItems}}</a>
 
+        <div class="col-2 ">
+            <div class="row align-items-center ">
+                <div class="col ">
+                    <a href="/carrito "><img src="/static/imagenes/cart_shop.png " width="60px " id="cartIcon " /></a>
+                </div>
+                {% if session.usuario %}
+                <div class="col ">
+                    <a class="link " style="color: black;">Productos {{registro}}</a>
+                </div>
+                {% endif %}
+            </div>
         </div>
-
     </div>
-
-
-</body>
-
-</html>
