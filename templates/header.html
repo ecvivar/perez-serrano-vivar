@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <title>Header</title>
+    <title>Vector Design</title>
 </head>
 
 <body>
@@ -42,26 +42,28 @@
         {% else %}
         <div class="col-2 ">
             <div class="row align-items-center ">
-                <div class="col ">Bienvenido, <br>{{session.usuario}}
+                <div class="col ">Bienvenido, <br>{{session.usuario}} Productos {{registro}}
                 </div>
                 <div class="col ">
+                    <!--
                     <a href="/carrito ">Pedidos</a>
                     <a href="# ">Perfil</a>
                     <hr>
+                    -->
                     <a href="/logout ">Logout</a>
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <div class="col-2 ">
+        <div class="col-1 ">
             <div class="row align-items-center ">
                 <div class="col ">
                     <a href="/carrito "><img src="/static/imagenes/cart_shop.png " width="60px " id="cartIcon " /></a>
                 </div>
                 {% if session.usuario %}
-                <div class="col ">
-                    <a class="link " style="color: black;">Productos {{registro}}</a>
+                <div class="circulo">
+                    <p>{{mostrarCuantos}}</p>
                 </div>
                 {% endif %}
             </div>

@@ -40,23 +40,20 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="col-sm-1 col-md-1" style="text-align: center;"><input type="number" class="form-control" value="{{cantidad_form}}"></td>
+                            <td class="col-sm-1 col-md-1" style="text-align: center;"><input type="number" class="form-control" value="{{producto[5]}}"></td>
                             <td class="col-sm-1 col-md-1 text-center"><strong>$ {{producto[4]}}</strong></td>
                             <td class="col-sm-1 col-md-1 text-center"><strong>$ {{producto[7]}}</strong></td>
                             <td class="col-sm-1 col-md-1">
-                                <a href="/borrar/{{producto[0]}}" class="btn btn-danger">
-                                    <span class="glyphicon glyphicon-remove"></span>Borrar
-                                    <!--Habria que ver este tambien-->
-                                </a>
+                                <a href="/borrar/{{producto[0]}}" class="btn btn-danger">Borrar</a>
                             </td>
                         </tr>
                         {% endfor %}
                         <tr>
                             <td colspan="4">
-                                <h5>Cantidad Total </h5>
+                                <h5>Cantidad Total {{mostrarCuantos}}</h5>
                             </td>
-                            <td colspan="2" class="text-right">
-                                <h3><strong>$ {{totalAbonar}}</strong></h3>
+                            <td colspan="4" class="text-right">
+                                <h5><strong>$ {{total}}</strong></h5>
                             </td>
                         </tr>
                         <tr>

@@ -20,11 +20,17 @@ def productos():
     sql="SELECT * FROM productos;"
     conn=mysql.connect() #Hacemos la conexion a mysql
     cursor=conn.cursor()
-    cursor.execute(sql) #Ejecutamos el string sql
-    
+    cursor.execute(sql) #Ejecutamos el string sql 
     rows=cursor.fetchall()
     print(rows)
-
+    #Mostrar cantidad de productos en el carrito
+    if 'usuario' in session:
+        usuario = session['usuario']
+        cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
+        registro = cursor.fetchone()
+        mostrarCuantos = registro[0]
+        conn.commit()
+        return render_template('productos.html',productos=rows, mostrarCuantos=mostrarCuantos)
     conn.commit()
     return render_template('productos.html',productos=rows) # Renderizo la pagina index.html
 
@@ -138,6 +144,14 @@ def search():
     cursor=conn.cursor()
     cursor.execute(sql,(('%' + busqueda + '%'))) #Ejecutamos el string sql junto al comodin
     rows=cursor.fetchall()
+    
+    if 'usuario' in session:
+        usuario = session['usuario']
+        cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
+        registro = cursor.fetchone()
+        mostrarCuantos = registro[0]
+        
+        return render_template('productos.html',productos=rows, mostrarCuantos=mostrarCuantos)
     conn.commit()
     return render_template('productos.html',productos=rows)
 
@@ -153,14 +167,23 @@ def carrito():
         itemCarrito = cursor.fetchall()
         #conn.commit()
         print(itemCarrito)
-        cursor.execute("SELECT COUNT(*) FROM carrito WHERE username=%s",usuario)
+        #Mostrar cantidad de productos en el carrito
+        cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
         registro = cursor.fetchone()
         mostrarCuantos = registro[0]
-        cantidadProductos = int(mostrarCuantos)
-        print(cantidadProductos)
+        print(mostrarCuantos)
+
+        cursor.execute("SELECT SUM(totalAbonar) FROM carrito WHERE username=%s",usuario)
+        totalSuma = cursor.fetchone()
+        total = totalSuma[0]
+        print(total)
         conn.commit()
 
-    return render_template('carrito.html', itemCarrito=itemCarrito) # Renderizo la pagina index.html
+        return render_template('carrito.html', itemCarrito=itemCarrito, mostrarCuantos=mostrarCuantos, total=total) # Renderizo la pagina index.html
+    
+    else:
+        msg = "Debe estar logueado"
+        return render_template('login.html', msg=msg)
 
 @app.route('/borrar/<int:id>')
 def borrar(id):

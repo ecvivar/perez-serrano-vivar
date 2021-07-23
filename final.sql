@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 22-07-2021 a las 11:31:43
+-- Tiempo de generación: 23-07-2021 a las 03:19:11
 -- Versión del servidor: 10.4.8-MariaDB
 -- Versión de PHP: 7.3.10
 
@@ -31,7 +31,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `carrito` (
   `id` int(10) NOT NULL,
   `username` varchar(50) NOT NULL,
-  `codigo` int(10) DEFAULT NULL,
+  `codigo` int(10) NOT NULL,
   `descripcion` varchar(255) DEFAULT NULL,
   `precio` decimal(10,0) DEFAULT NULL,
   `cantidad` int(4) DEFAULT NULL,
@@ -46,8 +46,10 @@ CREATE TABLE `carrito` (
 INSERT INTO `carrito` (`id`, `username`, `codigo`, `descripcion`, `precio`, `cantidad`, `foto`, `totalAbonar`) VALUES
 (25, 'juan', 2, 'Remera Beastie Boys', '1890', 1, 'beastie-boys1.png', '1890'),
 (28, 'pedro', 1, 'Remera Volver al Futuro', '1890', 1, 'back-to-the-future1.jpg', '1890'),
-(29, 'pedro', 3, 'Remera Beastie Boys', '1890', 1, 'beastie-boys2.png', '1890'),
-(30, 'pedro', 6, 'Remera Pink Floyd The Wall', '1890', 1, 'pink-floyd-the-wall1.png', '1890');
+(30, 'pedro', 6, 'Remera Pink Floyd The Wall', '1890', 1, 'pink-floyd-the-wall1.png', '1890'),
+(33, 'maria', 2, 'Remera Beastie Boys', '1890', 1, 'beastie-boys1.png', '1890'),
+(34, 'maria', 4, 'Remera Parental Advisory', '1890', 1, 'parental-advisory1.png', '1890'),
+(35, 'maria', 1, 'Remera Volver al Futuro', '1890', 1, 'back-to-the-future1.jpg', '1890');
 
 -- --------------------------------------------------------
 
@@ -100,7 +102,9 @@ CREATE TABLE `usuarios` (
 INSERT INTO `usuarios` (`id`, `username`, `password`, `email`) VALUES
 (2, 'pedro', '123456', 'pedro@gmail.com'),
 (3, 'juan', '123456', 'juan@gmail.com'),
-(4, 'jose', '123456', 'jose@gmail.com');
+(4, 'jose', '123456', 'jose@gmail.com'),
+(6, 'raul', '123456', 'raul@gmail.com'),
+(7, 'maria', '123456', 'maria@gmail.com');
 
 --
 -- Índices para tablas volcadas
@@ -132,7 +136,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `carrito`
 --
 ALTER TABLE `carrito`
-  MODIFY `id` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT de la tabla `productos`
@@ -144,7 +148,7 @@ ALTER TABLE `productos`
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
