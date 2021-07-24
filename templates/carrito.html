@@ -16,8 +16,6 @@
                     {% endif %} {% endwith %}
                 </div>
 
-                <a href="/vaciar_carrito/{{session.usuario}}" class="btn btn-danger">Vaciar Carrito</a>
-
                 <table class="table table-hover">
                     <thead>
                         <tr>
@@ -40,25 +38,33 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="col-sm-1 col-md-1" style="text-align: center;"><input type="number" class="form-control" value="{{producto[5]}}"></td>
+                            <td class="col-sm-1 col-md-1" style="text-align: center;"><label for="">{{producto[5]}}</label></td>
                             <td class="col-sm-1 col-md-1 text-center"><strong>$ {{producto[4]}}</strong></td>
                             <td class="col-sm-1 col-md-1 text-center"><strong>$ {{producto[7]}}</strong></td>
                             <td class="col-sm-1 col-md-1">
-                                <a href="/borrar/{{producto[0]}}" class="btn btn-danger">Borrar</a>
+                                <a href="/borrar/{{producto[0]}}" class="btn btn-danger" onclick="return confirm('¿Desea borrar el producto?')">Eliminar</a>
                             </td>
                         </tr>
                         {% endfor %}
                         <tr>
-                            <td colspan="4">
-                                <h5>Cantidad Total {{mostrarCuantos}}</h5>
+                            <td colspan="3" style="padding: 0%;">
+                                <h5>Cantidad Total {{mostrarCantidad}}</h5>
                             </td>
-                            <td colspan="4" class="text-right">
-                                <h5><strong>$ {{total}}</strong></h5>
+                            <td colspan="2" class="text-rigth">
+                                <h5><strong>$ {{mostrarTotal}}</strong></h5>
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <a href="/" class="btn btn-danger">Continuar Comprando</a>
+                            <td colspan="3">
+                                <a href="/" class="btn btn-dark">Continuar Comprando</a>
+                            </td>
+                            <td colspan="2">
+                                <a href="/vaciar_carrito/{{session.usuario}}" class="btn btn-dark">Vaciar Carrito</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <a href="/comprar" class="btn btn-danger">Iniciar Compra</a>
                             </td>
                         </tr>
 

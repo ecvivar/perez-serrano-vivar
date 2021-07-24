@@ -1,6 +1,9 @@
 from flask import Flask, session, render_template, request, redirect, url_for, flash
 from flaskext.mysql import MySQL
-import re
+from flask.helpers import send_from_directory
+import re,os
+from datetime import datetime
+
 
 app = Flask(__name__)
 
@@ -12,6 +15,11 @@ app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = ''
 app.config['MYSQL_DATABASE_DB'] = 'final'
+
+#AGREGAR CARPETA
+CARPETA = os.path.join('static/imagenes/imagenes_productos/')  # al path del proyecto le adjunto ‘upload’
+app.config['CARPETA'] = CARPETA
+
 
 mysql.init_app(app)
 
@@ -29,8 +37,12 @@ def productos():
         cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
         registro = cursor.fetchone()
         mostrarCuantos = registro[0]
+        if mostrarCuantos == None:
+            mostrarCantidad = 0
+        else:
+            mostrarCantidad = mostrarCuantos
         conn.commit()
-        return render_template('productos.html',productos=rows, mostrarCuantos=mostrarCuantos)
+        return render_template('productos.html',productos=rows, mostrarCantidad=mostrarCantidad)
     conn.commit()
     return render_template('productos.html',productos=rows) # Renderizo la pagina index.html
 
@@ -116,24 +128,42 @@ def add_product_to_cart():
             usuario=session['usuario']
 
             # Deberiamo comprobar que el producto se encuentre en el carrito
-            '''
-            Esto no anda
-            if int(codigo_form) == int(_codigo):
-                nueva_cantidad = int(cantidad_form) + 1
-                print(nueva_cantidad)
-                conn = mysql.connect()
-                cursor = conn.cursor()         
-                cursor.execute("UPDATE carrito SET `cantidad`=%s WHERE codigo=%s",(nueva_cantidad,codigo_form))
-                conn.commit()
-            else:
-            '''    
             conn = mysql.connect()
             cursor = conn.cursor()
-            sql = "INSERT INTO `carrito`(`id`, `username`, `codigo`, `descripcion`, `precio`, `cantidad`, `foto`, `totalAbonar`) VALUES (NULL, %s, %s, %s, %s, %s, %s, %s)"
-            datos = (usuario, _codigo,_descripcion, _precio, cantidad_form, _foto, totalAbonar)         
-            cursor.execute(sql,datos)
-            conn.commit()
-
+            cursor.execute("SELECT codigo, cantidad, precio FROM carrito WHERE username=%s AND codigo=%s",(usuario,codigo_form))
+            productosCarrito = cursor.rowcount
+            print('Contenido del codigo_form')
+            print(codigo_form)
+            cantidadEnCarrito = cursor.fetchone()
+            #cantidadExistente = cantidadEnCarrito[0]
+            
+            if cantidadEnCarrito == None:
+                cantidadExistente = 0
+            else:
+                cantidadExistente = cantidadEnCarrito[1]
+            #conn.commit()
+            print(cantidadEnCarrito)
+            print(cantidadExistente)
+            if productosCarrito >0:
+                #Como el producto ya esta en el carrito solo incrementamos la cantidad segun el valor que trae el formulario
+                nuevaCantidad = cantidadExistente + int(cantidad_form)
+                nuevoTotalAbonar = nuevaCantidad * cantidadEnCarrito[2]
+                conn = mysql.connect()
+                cursor = conn.cursor()
+                cursor.execute("UPDATE carrito SET cantidad=%s, totalAbonar=%s ",(nuevaCantidad,nuevoTotalAbonar))
+                conn.commit()
+                msg = "El producto fua a;adido al carrito"
+                print("Match")
+                print(nuevaCantidad)
+            else:
+                #Si el producto no existe en el carrito del usuario, entonces lo agregamos como un nuevo registro
+                conn = mysql.connect()
+                cursor = conn.cursor()
+                sql = "INSERT INTO `carrito`(`id`, `username`, `codigo`, `descripcion`, `precio`, `cantidad`, `foto`, `totalAbonar`) VALUES (NULL, %s, %s, %s, %s, %s, %s, %s)"
+                datos = (usuario, _codigo,_descripcion, _precio, cantidad_form, _foto, totalAbonar)         
+                cursor.execute(sql,datos)
+                conn.commit()
+                print("Not Match")
             return redirect('/carrito') 
 
 @app.route('/search', methods=['POST'])
@@ -150,8 +180,12 @@ def search():
         cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
         registro = cursor.fetchone()
         mostrarCuantos = registro[0]
+        if mostrarCuantos == None:
+            mostrarCantidad = 0
+        else:
+            mostrarCantidad = mostrarCuantos
         
-        return render_template('productos.html',productos=rows, mostrarCuantos=mostrarCuantos)
+        return render_template('productos.html',productos=rows, mostrarCantidad=mostrarCantidad)
     conn.commit()
     return render_template('productos.html',productos=rows)
 
@@ -159,27 +193,37 @@ def search():
 def carrito():
     if 'usuario' in session:
         usuario = session['usuario']
-        print(usuario)
+        #print(usuario)
 
         conn = mysql.connect()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM carrito WHERE username=%s",usuario)
         itemCarrito = cursor.fetchall()
         #conn.commit()
-        print(itemCarrito)
+        #print(itemCarrito)
         #Mostrar cantidad de productos en el carrito
         cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
         registro = cursor.fetchone()
         mostrarCuantos = registro[0]
-        print(mostrarCuantos)
+        if mostrarCuantos == None:
+            mostrarCantidad = 0
+        else:
+            mostrarCantidad = mostrarCuantos
+
+        print(mostrarCantidad)
 
         cursor.execute("SELECT SUM(totalAbonar) FROM carrito WHERE username=%s",usuario)
         totalSuma = cursor.fetchone()
-        total = totalSuma[0]
-        print(total)
+        total = (totalSuma[0])
+        if total == None:
+            mostrarTotal = 0
+        else:
+            mostrarTotal = total
+
+        #print(total)
         conn.commit()
 
-        return render_template('carrito.html', itemCarrito=itemCarrito, mostrarCuantos=mostrarCuantos, total=total) # Renderizo la pagina index.html
+        return render_template('carrito.html', itemCarrito=itemCarrito, mostrarCantidad=mostrarCantidad, mostrarTotal=mostrarTotal) # Renderizo la pagina index.html
     
     else:
         msg = "Debe estar logueado"
@@ -200,6 +244,153 @@ def vaciar_carrito(username):
     cursor.execute("DELETE FROM carrito WHERE username=%s",(username))
     conn.commit()
     return redirect('/carrito')
+
+
+#Metodos ABM 
+
+
+@app.route('/abm')
+def abm():
+    if session:    
+        if session['usuario'] == 'admin' and session['usuario']:
+            sql = "SELECT * FROM `final`.`productos`;"
+            conn = mysql.connect()
+            cursor = conn.cursor()
+            cursor.execute(sql)
+            # guarda el resultado del cursor del cursor en la variable productos
+            productos = cursor.fetchall()
+
+            #usuario = session['usuario']
+            cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",'admin')
+            registro = cursor.fetchone()
+            mostrarCuantos = registro[0]
+            if mostrarCuantos == None:
+                mostrarCantidad = 0
+            else:
+                mostrarCantidad = mostrarCuantos
+
+            conn.commit()
+            # return render_template('abm.html')
+            return render_template('abm.html', productos=productos, mostrarCantidad=mostrarCantidad)
+    else:
+            return redirect('/')
+
+@app.route('/store',methods=['POST'])
+def storage():
+       # toma los datos que envio elformulario en txtNombre
+    _nombre = request.form['txtDescripcion']
+    _precio = request.form['txtPrecio']  # toma los datos del formulario
+    _cantidad = request.form['txtCantidad']  # toma los datos del
+    _foto = request.files['txtFoto']  # toma los datos del
+
+    now = datetime.now()
+    tiempo = now.strftime(("%Y%H%M%S"))
+    if _foto.filename != '':  # distinto de vacio
+        nuevoNombreFoto = tiempo+_foto.filename
+        _foto.save("static/imagenes/imagenes_productos/"+nuevoNombreFoto)
+
+    sql = "INSERT INTO `final`.`productos` (`codigo`,`descripcion`,`precio`,`cantidad`,`foto`) VALUES (null,%s,%s,%s,%s)"
+    datos = (_nombre, _precio, _cantidad, nuevoNombreFoto)  # crea la sentencia sql
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    cursor.execute(sql, datos)  # ejecuta la sentencia sql
+    conn.commit()
+    return redirect('/abm')
+
+@app.route('/create')
+def create():
+    conn = mysql.connect()              # me conecto a la base de datos
+    cursor = conn.cursor()  
+    cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",'admin')
+    registro = cursor.fetchone()
+    mostrarCuantos = registro[0]
+    if mostrarCuantos == None:
+        mostrarCantidad = 0
+    else:
+        mostrarCantidad = mostrarCuantos    
+
+    conn.commit()
+    return render_template('create.html', mostrarCantidad=mostrarCantidad)
+
+@app.route('/edit/<int:id>')
+def edit(id):
+    sql = "SELECT * FROM `final`.`productos` WHERE codigo=%s;"
+    conn = mysql.connect()              # me conecto a la base de datos
+    cursor = conn.cursor()              # almacenar informacion
+    cursor.execute(sql, (id))               # ejecuto en MySQL la variable sql
+    productos = cursor.fetchall()
+
+    cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",'admin')
+    registro = cursor.fetchone()
+    mostrarCuantos = registro[0]
+    if mostrarCuantos == None:
+        mostrarCantidad = 0
+    else:
+        mostrarCantidad = mostrarCuantos    
+
+    conn.commit()
+    return render_template('edit.html', productos=productos, mostrarCantidad=mostrarCantidad)
+
+@app.route('/update',  methods=['POST'])
+# cuando formulario create.hmtl hace el submit envia los datos a /store
+def update():
+    _nombre = request.form['txtDescripcion']
+    _precio = request.form['txtPrecio']  # toma los datos del formulario
+    _cantidad = request.form['txtCantidad']  # toma los datos del
+    _foto = request.files['txtFoto']  # toma los datos del
+    _id = request.form['txtId']
+
+    sql = "UPDATE `final`.`productos` SET `descripcion`=%s ,`precio`=%s ,`cantidad`=%s WHERE codigo=%s"
+    datos = (_nombre, _precio,_cantidad, _id)  # crea la sentencia sql
+
+    conn = mysql.connect()
+    cursor = conn.cursor()
+
+    # agregamos
+    now = datetime.now()                        # igual que en /store
+    tiempo = now.strftime("%Y%H%M%S")
+
+    if _foto.filename != '':
+        nuevoNombreFoto = tiempo+_foto.filename
+        # guardo la foto en la carpeta ’uploads’
+        _foto.save("static/imagenes/imagenes_productos/"+nuevoNombreFoto)
+        cursor.execute(
+            "SELECT foto FROM `final`.`productos` WHERE codigo=%s", (_id))
+        fila = cursor.fetchall()   # fila va a tener un solo registro y 1 solo campo
+        os.remove(os.path.join(app.config['CARPETA'], fila[0][0]))
+        cursor.execute(
+            "UPDATE `final`.`productos` SET foto=%s WHERE codigo=%s", (nuevoNombreFoto, _id))
+        conn.commit()
+
+    cursor.execute(sql, datos)               # ejecuta la sentencia sql
+    conn.commit()
+    return redirect('abm')  # y renderiza index.html
+
+@app.route('/uploads/<nombreFoto>')
+def uploads(nombreFoto):
+    # entras al directorio y mostras ese nombre de foto
+    return send_from_directory(app.config['CARPETA'], nombreFoto)
+
+@app.route('/destroy/<int:id>')
+def destroy(id):
+    sql = "DELETE FROM `final`.`productos` WHERE codigo=%s;"
+    conn = mysql.connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT foto FROM `final`.`productos` WHERE codigo=%s", (id))
+    fila = cursor.fetchall()   # fila va a tener un solo registro y 1 solo campo
+    # remuevo la foto
+    os.remove(os.path.join(app.config['CARPETA'], fila[0][0]))
+
+    cursor.execute(sql, (id))  # ejecuta la sentencia sql
+    conn.commit()
+    return redirect('/abm')  # y renderiza index.html
+    
+# Vamos a integrar el SDK Python de Mercado Pago
+@app.route('/comprar')
+def comprar():    
+    return render_template('comprar.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
