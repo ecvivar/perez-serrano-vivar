@@ -1,8 +1,9 @@
-from flask import Flask, session, render_template, request, redirect, url_for, flash
+from flask import Flask, session, render_template, request, redirect, url_for
 from flaskext.mysql import MySQL
 from flask.helpers import send_from_directory
 import re,os
 from datetime import datetime
+
 
 
 app = Flask(__name__)
@@ -193,14 +194,11 @@ def search():
 def carrito():
     if 'usuario' in session:
         usuario = session['usuario']
-        #print(usuario)
-
         conn = mysql.connect()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM carrito WHERE username=%s",usuario)
         itemCarrito = cursor.fetchall()
         #conn.commit()
-        #print(itemCarrito)
         #Mostrar cantidad de productos en el carrito
         cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
         registro = cursor.fetchone()
@@ -210,7 +208,7 @@ def carrito():
         else:
             mostrarCantidad = mostrarCuantos
 
-        print(mostrarCantidad)
+        #print(mostrarCantidad)
 
         cursor.execute("SELECT SUM(totalAbonar) FROM carrito WHERE username=%s",usuario)
         totalSuma = cursor.fetchone()
@@ -245,15 +243,13 @@ def vaciar_carrito(username):
     conn.commit()
     return redirect('/carrito')
 
-
 #Metodos ABM 
-
 
 @app.route('/abm')
 def abm():
     if session:    
         if session['usuario'] == 'admin' and session['usuario']:
-            sql = "SELECT * FROM `final`.`productos`;"
+            sql = "SELECT * FROM `productos`;"
             conn = mysql.connect()
             cursor = conn.cursor()
             cursor.execute(sql)
@@ -289,7 +285,7 @@ def storage():
         nuevoNombreFoto = tiempo+_foto.filename
         _foto.save("static/imagenes/imagenes_productos/"+nuevoNombreFoto)
 
-    sql = "INSERT INTO `final`.`productos` (`codigo`,`descripcion`,`precio`,`cantidad`,`foto`) VALUES (null,%s,%s,%s,%s)"
+    sql = "INSERT INTO `productos` (`codigo`,`descripcion`,`precio`,`cantidad`,`foto`) VALUES (null,%s,%s,%s,%s)"
     datos = (_nombre, _precio, _cantidad, nuevoNombreFoto)  # crea la sentencia sql
     conn = mysql.connect()
     cursor = conn.cursor()
@@ -314,7 +310,7 @@ def create():
 
 @app.route('/edit/<int:id>')
 def edit(id):
-    sql = "SELECT * FROM `final`.`productos` WHERE codigo=%s;"
+    sql = "SELECT * FROM `productos` WHERE codigo=%s;"
     conn = mysql.connect()              # me conecto a la base de datos
     cursor = conn.cursor()              # almacenar informacion
     cursor.execute(sql, (id))               # ejecuto en MySQL la variable sql
@@ -340,7 +336,7 @@ def update():
     _foto = request.files['txtFoto']  # toma los datos del
     _id = request.form['txtId']
 
-    sql = "UPDATE `final`.`productos` SET `descripcion`=%s ,`precio`=%s ,`cantidad`=%s WHERE codigo=%s"
+    sql = "UPDATE `productos` SET `descripcion`=%s ,`precio`=%s ,`cantidad`=%s WHERE codigo=%s"
     datos = (_nombre, _precio,_cantidad, _id)  # crea la sentencia sql
 
     conn = mysql.connect()
@@ -355,11 +351,11 @@ def update():
         # guardo la foto en la carpeta ’uploads’
         _foto.save("static/imagenes/imagenes_productos/"+nuevoNombreFoto)
         cursor.execute(
-            "SELECT foto FROM `final`.`productos` WHERE codigo=%s", (_id))
+            "SELECT foto FROM `productos` WHERE codigo=%s", (_id))
         fila = cursor.fetchall()   # fila va a tener un solo registro y 1 solo campo
         os.remove(os.path.join(app.config['CARPETA'], fila[0][0]))
         cursor.execute(
-            "UPDATE `final`.`productos` SET foto=%s WHERE codigo=%s", (nuevoNombreFoto, _id))
+            "UPDATE `productos` SET foto=%s WHERE codigo=%s", (nuevoNombreFoto, _id))
         conn.commit()
 
     cursor.execute(sql, datos)               # ejecuta la sentencia sql
@@ -373,11 +369,11 @@ def uploads(nombreFoto):
 
 @app.route('/destroy/<int:id>')
 def destroy(id):
-    sql = "DELETE FROM `final`.`productos` WHERE codigo=%s;"
+    sql = "DELETE FROM `productos` WHERE codigo=%s;"
     conn = mysql.connect()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT foto FROM `final`.`productos` WHERE codigo=%s", (id))
+    cursor.execute("SELECT foto FROM `productos` WHERE codigo=%s", (id))
     fila = cursor.fetchall()   # fila va a tener un solo registro y 1 solo campo
     # remuevo la foto
     os.remove(os.path.join(app.config['CARPETA'], fila[0][0]))
@@ -386,11 +382,77 @@ def destroy(id):
     conn.commit()
     return redirect('/abm')  # y renderiza index.html
     
-# Vamos a integrar el SDK Python de Mercado Pago
+# Vamos a integrar un SDK que permita pagar electronicamente
 @app.route('/comprar')
 def comprar():    
-    return render_template('comprar.html')
+    sdk = mercadopago.SDK("TEST-4568818446897296-072421-5818c719a4bccb5e20bd5b81c69450f1-89489605")
+    #Obtener todos los medios de pago
+    payment_methods_response = sdk.payment_methods().list_all()
+    payment_methods = payment_methods_response["response"]
+    #print(payment_methods)
+    #Traemos de nuevo los productos del carrito para poder generar la orden de pago
+    usuario = session['usuario']
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM carrito WHERE username=%s",usuario)
+    itemCarrito = cursor.fetchall()
+    #conn.commit()
+    #Mostrar cantidad de productos en el carrito
+    cursor.execute("SELECT SUM(cantidad) FROM carrito WHERE username=%s",usuario)
+    registro = cursor.fetchone()
+    mostrarCuantos = registro[0]
+    if mostrarCuantos == None:
+        mostrarCantidad = 0
+    else:
+        mostrarCantidad = mostrarCuantos
+    #Sumamos el total a abonar por los productos en el carrito
+    cursor.execute("SELECT SUM(totalAbonar) FROM carrito WHERE username=%s",usuario)
+    totalSuma = cursor.fetchone()
+    total = (totalSuma[0])
+    if total == None:
+        mostrarTotal = 0
+    else:
+        mostrarTotal = total
 
+    conn.commit()
+
+    return render_template('comprar.html', mostrarCantidad=mostrarCantidad,mostrarTotal=mostrarTotal)
+
+# Importamos el SDK de mercadopago
+import mercadopago
+
+@app.route('/process_payment', methods = ['POST'])
+def process_payment():
+
+    sdk = mercadopago.SDK("TEST-4568818446897296-072421-5818c719a4bccb5e20bd5b81c69450f1-89489605")
+
+    transaction_amount = request.form['transactionAmount']
+    description = request.form['productDescription']
+    payment_method_id = request.form['paymentMethod']
+    payer = request.form['payerEmail']
+    
+    payment_data = {
+        "items": [
+            {
+            #"transaction_amount": transaction_amount,
+            "description": description,
+            "quantity": 1,
+            "unit_price": float(transaction_amount),
+            "payment_method_id": payment_method_id,
+            "payer": {
+            "email": payer
+            }
+            }
+        ]
+    }
+    print(payment_data)
+
+    payment_response = sdk.preference().create(payment_data)
+    payment = payment_response["response"]["init_point"]
+    
+    print(payment)
+   
+    return redirect(payment)
 
 if __name__ == '__main__':
     app.run(debug=True)

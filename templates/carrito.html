@@ -1,4 +1,5 @@
- {% include 'header.html' %}
+{% include 'header.html' %}
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <section>
     <div class="container">
         <div class="row">
@@ -62,16 +63,17 @@
                                 <a href="/vaciar_carrito/{{session.usuario}}" class="btn btn-dark">Vaciar Carrito</a>
                             </td>
                         </tr>
-                        <tr>
-                            <td colspan="4" class="text-center">
-                                <a href="/comprar" class="btn btn-danger">Iniciar Compra</a>
-                            </td>
-                        </tr>
 
                     </tbody>
                 </table>
+
             </div>
+
         </div>
+        <div class="text-center">
+            <a href="/comprar" class="btn btn-danger"> Comprar </a>
+        </div>
+        <br>
     </div>
 </section>
 {% include 'footer.html' %}

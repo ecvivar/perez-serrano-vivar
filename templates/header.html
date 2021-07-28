@@ -9,8 +9,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-
+    <link rel="stylesheet" href="/static/css/styles-mp.css">
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -21,53 +20,47 @@
 
 <body>
 
+    <div class="row align-items-center shadow">
 
-    <div class="row align-items-center">
-
-        <div class="col-3">
+        <div class="col-sm-2">
             <a href=" / ">
                 <img id="logo " src="/static/imagenes/logo/logo_design.JPG" width="80%">
             </a>
         </div>
 
-
-        <form method="post" action="/search" enctype="multipart/form-data">
-            <div class="container row align-items-center">
-                <div class="col-10">
-                    <input class="form-control form-control-lg" type="text" id="txtSearch" name="txtSearch">
+        <div class="col-sm-6">
+            <form class="form-inline" method="post" action="/search" enctype="multipart/form-data">
+                <div class="form-group mx-sm-3">
+                    <input class="form-control" type="text" id="txtSearch" name="txtSearch">
                 </div>
-                <div class=" col-2">
+                <div class="form-group mx-sm-3">
                     <input class="btn btn-dark" type="submit" value="Buscar">
                 </div>
-            </div>
-        </form>
-
-        <div class="col-1 ">
-            <div class="row align-items-center ">
-                <div class="col">
-                    <a href="/carrito "><img src="/static/imagenes/cart_shop.png " width="60px" id="cartIcon " /></a>
-                </div>
-                {% if session.usuario %}
-                <div class="circulo col">
-                    <p>{{mostrarCantidad}}</p>
-                </div>
-                {% endif %}
-            </div>
+            </form>
         </div>
 
-        {% if session['usuario']=='admin' %}
-        <div class="col-1">
+        <div class="col-sm-1">
+            <a href="/carrito "><img src="/static/imagenes/cart_shop.png " width="60px" id="cartIcon " /></a>
+        </div>
+        {% if session.usuario %}
+        <div class="col-sm-1">
+            <div class="circulo">
+                <p>{{mostrarCantidad}}</p>
+            </div>
+        </div>
+        {% endif %} {% if session['usuario']=='admin' %}
+        <div class="col-sm-1">
             <a class="link btn btn-danger" href="/abm "> Administrar</a>
 
         </div>
         {% endif %} {% if not session.usuario %}
-        <div>
+        <div class="col-sm-1">
             <div id="signInButton ">
                 <a class="btn btn-dark" href="/login">Sign In</a>
             </div>
         </div>
         {% else %}
-        <div class="col-2">
+        <div class="col-sm-1">
             <div class="dropdown ">
                 <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
                     {{session.usuario}}</button>
@@ -80,4 +73,3 @@
         </div>
         {% endif %}
     </div>
-    <div class="container">

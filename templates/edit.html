@@ -1,7 +1,4 @@
-{% include 'header.html' %}
-
-
-
+{% include 'header.html' %} {% if session['usuario']=='admin' %}
 <div class="container">
     {% for producto in productos %}
     <form method="POST" action="/update" enctype="multipart/form-data">
@@ -9,33 +6,60 @@
             <div class="card-header">
                 Editar producto
             </div>
-            <div class="card-body">
-                <h5 class="card-title">Datos del producto</h5>
-                <p class="card-text">
-                    <input type="text" name="txtId" value="{{producto[0]}}" id="txtId">
-                    <br>
-                    Descripcion
-                    <input type="text" name="txtDescripcion" value="{{producto[1]}}" id="txtDescripcion">
-                    <br>
-                    Precio:
-                    <input type="text" name="txtPrecio" value="{{producto[2]}}" id="txtCorreo">
-                    <br>
-                    Cantidad:
-                    <input type="text" name="txtCantidad" value="{{producto[3]}}" id="txtCorreo">
-                    <br>
+            <div class="card-body text-center">
+                <div class="form-group row">
+                    <div class="col">
+                        Datos del producto
+                    </div>
+                    <div class="col">
+                        <input class="form-control" type="text" name="txtId" value="{{producto[0]}}" id="txtId">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col">
+                        Descripcion
+                    </div>
+                    <div class="col">
+                        <input class="form-control" type="text" name="txtDescripcion" value="{{producto[1]}}" id="txtDescripcion">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col">
+                        Precio:
+                    </div>
+                    <div class="col">
+                        <input class="form-control" type="text" name="txtPrecio" value="{{producto[2]}}" id="txtCorreo">
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col">
+                        Cantidad:
+                    </div>
+                    <div class="col">
+                        <input class="form-control" type="text" name="txtCantidad" value="{{producto[3]}}" id="txtCorreo">
+                    </div>
+                </div>
+                <div class="form-group">
                     <!--Llamo al metodo uploads y le mando la foto-->
-                    <img class="img-thumbnail" src="{{url_for('uploads',nombreFoto=producto[4])}}" alt="foto producto"
-                        width="100">
-                    <input type="file" name="txtFoto" value="{{producto[4]}}" id="txtFoto">
-                    <br><br>
-                    <input type="submit" value="Aceptar">
-                    <br>
-                </p>
+                    <img class="img-thumbnail" src="{{url_for('uploads',nombreFoto=producto[4])}}" alt="foto producto" width="100">
+
+                </div>
+                <div class="form-group">
+                    <input class="form-contrl" type="file" name="txtFoto" value="{{producto[4]}}" id="txtFoto">
+
+                </div>
+                <div class="form-group">
+                    <input class="form-contrl" type="submit" value="Aceptar">
+
+                </div>
+
             </div>
         </div>
     </form>
     {% endfor %}
-    </h1>
 </div>
-{% include 'footer.html' %}
-
+{%else%}
+<br>
+<h1>ACCESO NO AUTORIZADO</h1>
+<br> {%endif%} {% include 'footer.html' %}
